@@ -27,7 +27,7 @@ func grep(file *os.File, pattern string, after int, before int, ignoreCase bool,
 		addition += "(?i)"
 	}
 	substr := regexp.MustCompile(addition + pattern)
-	fmt.Println("gf")
+	 
 	cAfter := after
 	cBefore := before
 	for i := 1; fileScanner.Scan(); i++ {
@@ -66,32 +66,6 @@ func grep(file *os.File, pattern string, after int, before int, ignoreCase bool,
 }
 
 func main() {
-	// var err error
-
-	// // Create an ls command.
-	// ls := exec.Command("ls", "-la")
-
-	// // Create a grep command that searches for anything
-	// // that contains .go in it's filename.
-	// grep := exec.Command("grep", "\\.go")
-
-	// // Set grep's stdin to the output of the ls command.
-	// grep.Stdin, err = ls.StdoutPipe()
-	// if err != nil {
-	// 	log.Fatalln(err)
-	// }
-
-	// // Set grep's stdout to os.Stdout
-	// grep.Stdout = os.Stdout
-
-	// // Start the grep command first. (The order will be last command first)
-	// must(grep.Start())
-
-	// // Run the ls command. (Run calls start and also calls wait)
-	// must(ls.Run())
-
-	// // Wait for the grep command to finish.
-	// must(grep.Wait())
 	after := flag.Int("A", 0, "Print +N lines after match.")
 	before := flag.Int("B", 0, "Print +N lines until match.")
 	// context := flag.Int("C", 0, "(A+B) print ±N lines around the match.")
@@ -104,13 +78,13 @@ func main() {
 	flag.Parse()
 	pattern := flag.Arg(0)
 	filename := flag.Arg(1)
-	fmt.Println(pattern, filename)
+
 	if filename != "" && pattern != "" {
 		file, err := openFile(filename)
 		if err == nil {
 			grep(file, pattern, *after, *before, *ignoreCase, *lineNum, *invert)
 		} else {
-			fmt.Println("Файл не парсится")
+			fmt.Println("The file is not parsed")
 		}
 	}
 }

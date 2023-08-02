@@ -88,9 +88,9 @@ func (s SSort) parseAsN(n1 []string, n2 []string) (int, int, bool) {
 func (s SSort) sortedNotification() {
 	if s.isSorted {
 		if s.bySorted {
-			fmt.Println("Отсортировано")
+			fmt.Println("Sorted")
 		} else {
-			fmt.Println("Неотсортировано")
+			fmt.Println("Unsorted")
 		}
 	}
 }
