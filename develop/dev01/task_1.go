@@ -25,9 +25,8 @@ type facade interface {
 func getCurrentTime(address string) string {
 	ntpTime, err := ntp.Time(address)
 	if err != nil {
-		// Код ошибки еще надо откудото взять
-		// возвращать ненулевой код выхода в OS
 		fmt.Fprintf(os.Stderr, "log msg: %s", err)
+		os.Exit(1)
 	}
 	ntpTimeFormatted := ntpTime.Format(time.UnixDate)
 	fmt.Fprintf(os.Stdout, "%s\n", ntpTimeFormatted)
