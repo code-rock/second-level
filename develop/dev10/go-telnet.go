@@ -16,12 +16,10 @@ func main() {
 	timeout := flag.Int("timeout", 10, "Таймаут на подключение к серверу")
 	flag.Parse()
 
-	argsWithProg := os.Args
-	n := len(argsWithProg)
-	host := argsWithProg[n-2]
-	port := argsWithProg[n-1]
+	host := flag.Arg(0)
+	port := flag.Arg(1)
 
-	if n < 2 {
+	if host == "" || port == "" {
 		fmt.Println("Укажте хост и порт")
 		return
 	}
@@ -31,7 +29,6 @@ func main() {
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
-	<-quit
 
 	if err != nil {
 		fmt.Println(err)
@@ -52,7 +49,6 @@ func main() {
 	}()
 
 	go func() {
-		buf := make([]byte, 0, 4096)
 		tmp := make([]byte, 256)
 		for {
 			n, err := conn.Read(tmp)
@@ -63,10 +59,9 @@ func main() {
 				break
 			}
 
-			buf = append(buf, tmp[:n]...)
-
+			io.WriteString(os.Stdout, fmt.Sprintf("%v \n", n))
 		}
-		io.WriteString(os.Stdout, fmt.Sprintf("%v \n", buf))
 	}()
 
+	<-quit
 }
