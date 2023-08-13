@@ -7,28 +7,28 @@ import (
 	"strings"
 )
 
-var IsLetter = regexp.MustCompile(`[a-zA-Z]`).MatchString
-var IsSlash = regexp.MustCompile(`\\`).MatchString
-var IsNumber = regexp.MustCompile(`[0-9]`).MatchString
+var isLetter = regexp.MustCompile(`[a-zA-Z]`).MatchString
+var isSlash = regexp.MustCompile(`\\`).MatchString
+var isNumber = regexp.MustCompile(`[0-9]`).MatchString
 
-type SStringUnpackage struct {
+type sStringUnpackage struct {
 	newString    strings.Builder
 	slashCounter int
 	repidable    string
 }
 
-func (su *SStringUnpackage) letterProcessing(char string) {
+func (su *sStringUnpackage) letterProcessing(char string) {
 	su.newString.WriteString(char)
 	su.slashCounter = 0
 	su.repidable = char
 }
 
-func (su *SStringUnpackage) slashProcessing(char string) {
+func (su *sStringUnpackage) slashProcessing(char string) {
 	su.slashCounter += 1
 	su.repidable = char
 }
 
-func (su *SStringUnpackage) numberProcessing(char string) {
+func (su *sStringUnpackage) numberProcessing(char string) {
 	if n, ok := strconv.ParseInt(char, 10, 8); ok == nil {
 		n := int(n)
 
@@ -47,27 +47,40 @@ func (su *SStringUnpackage) numberProcessing(char string) {
 
 			}
 		} else {
-			su.newString.WriteString(strings.Repeat(su.repidable, n-1))
+			if n-1 > 0 {
+				su.newString.WriteString(strings.Repeat(su.repidable, n-1))
+			} else {
+				su.newString.WriteString("")
+			}
+			su.repidable = ""
 		}
 		su.slashCounter = 0
 	}
 }
 
-func (su *SStringUnpackage) unpacking(s string) string {
+func (su *sStringUnpackage) unpacking(s string) string {
 	for i := 0; i < len(s); i++ {
 		char := string(s[i])
-		if IsLetter(char) {
+		if isLetter(char) {
 			su.letterProcessing(char)
-		} else if IsSlash(char) {
+		} else if isSlash(char) {
 			su.slashProcessing(char)
-		} else if IsNumber(char) {
+		} else if isNumber(char) {
 			su.numberProcessing(char)
 		}
 	}
 	return su.newString.String()
 }
 
+func stringFactory() *sStringUnpackage {
+	return &sStringUnpackage{}
+}
+
+func StringUnpacking(str string) string {
+	s := stringFactory()
+	return s.unpacking(str)
+}
+
 func main() {
-	s := SStringUnpackage{}
-	fmt.Println(s.unpacking(`qwe\4\5`))
+	fmt.Println(StringUnpacking(`qwe\4\5`))
 }

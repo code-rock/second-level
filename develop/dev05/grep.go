@@ -7,6 +7,8 @@ import (
 	"io"
 	"os"
 	"regexp"
+
+	"github.com/gammazero/deque"
 )
 
 func openFile(url string) (*os.File, error) {
@@ -27,34 +29,30 @@ func grep(file *os.File, pattern string, after int, before int, ignoreCase bool,
 		addition += "(?i)"
 	}
 	substr := regexp.MustCompile(addition + pattern)
-	 
+	var queue deque.Deque[string]
 	cAfter := after
 	cBefore := before
-	for i := 1; fileScanner.Scan(); i++ {
+	for i := 0; fileScanner.Scan(); i++ {
 		line := fileScanner.Text()
-		cBefore = i - before
-		if cBefore < 0 {
-			cBefore = 0
-		}
-		if (invert && !substr.MatchString(line)) || (!invert && substr.MatchString(line)) {
+		queue.PushBack(line)
 
-			fileScanner2 := bufio.NewScanner(file)
-			for j := 0; before >= 0 && fileScanner2.Scan(); {
-				if j >= cBefore {
+		if (invert && !substr.MatchString(line)) || (!invert && substr.MatchString(line)) {
+			if queue.Len() > 0 {
+				for j := cBefore - 1; cBefore >= 0; cBefore-- {
+					cl := queue.At(queue.Len() - j)
 					if lineNum {
-						io.WriteString(os.Stdout, fmt.Sprintf("%d %s \n", i, fileScanner2.Text()))
+						io.WriteString(os.Stdout, fmt.Sprintf("%d %s \n", i, cl))
 					} else {
-						io.WriteString(os.Stdout, fileScanner2.Text()+"\n")
+						io.WriteString(os.Stdout, cl+"\n")
 					}
 				}
-
 			}
+
 			if lineNum {
 				io.WriteString(os.Stdout, fmt.Sprintf("%d %s \n", i, line))
 			} else {
 				io.WriteString(os.Stdout, line+"\n")
 			}
-
 			cAfter = after
 		} else {
 			if after > 0 {

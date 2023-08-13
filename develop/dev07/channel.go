@@ -2,33 +2,43 @@ package main
 
 import (
 	"fmt"
-	"sync"
 	"time"
 )
 
-type TChannel <-chan interface{}
+type TChannel <-chan bool
 
 func uniteСhannels(channels ...TChannel) TChannel {
-	united := make(chan interface{})
-	var wg sync.WaitGroup
-
+	united := make(chan bool)
+	fmt.Println("start")
 	for _, channel := range channels {
-		wg.Add(1)
+		fmt.Println("channel before", channel)
 		go func(channel TChannel) {
+			fmt.Println("channel", channel)
 			for message := range channel {
 				united <- message
 			}
-			wg.Done()
 		}(channel)
 	}
-	wg.Wait()
-	defer close(united)
+
+	go func() {
+		for {
+			select {
+			case <-united:
+				close(united)
+				fmt.Println("close")
+
+				return
+			}
+		}
+
+	}()
+
 	return united
 }
 
 func main() {
 	sig := func(after time.Duration) TChannel {
-		c := make(chan interface{})
+		c := make(chan bool)
 		go func() {
 			defer close(c)
 			time.Sleep(after)
@@ -36,14 +46,14 @@ func main() {
 		return c
 	}
 
-	start := time.Now()
 	united := uniteСhannels(
 		sig(2*time.Hour),
 		sig(5*time.Minute),
-		sig(1*time.Second),
+		sig(10*time.Second),
 		sig(1*time.Hour),
 		sig(1*time.Minute),
 	)
 
-	fmt.Printf("fone after %v %v \n", time.Since(start), united)
+	fmt.Println("united", united)
+
 }
